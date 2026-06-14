@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How much do you know about Diogo?</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Card Flip Animation Styles */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans antialiased selection:bg-rose-500 selection:text-white">
+
+    <!-- Top Navigation / Progress -->
+    <header class="w-full max-w-2xl mx-auto px-6 pt-6">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent uppercase">
+                Diogo Quest
+            </h1>
+            <div id="score-counter" class="hidden text-sm font-bold bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-rose-400">
+                Score: <span id="current-score">0</span>/<span id="total-allowed">20</span>
+            </div>
+        </div>
+        <div id="progress-bar-container" class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800 hidden">
+            <div id="progress-bar" class="bg-gradient-to-r from-rose-500 to-amber-500 h-2 w-0 transition-all duration-300 ease-out"></div>
+        </div>
+    </header>
+
+    <!-- Main Content Dynamic Window -->
+    <main class="w-full max-w-xl mx-auto px-4 py-8 flex-grow flex items-center justify-center">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="w-full text-center space-y-8 bg-slate-900/50 border border-slate-800/80 p-8 rounded-3xl backdrop-blur-xl shadow-2xl transition-all duration-300">
+            <div class="space-y-3">
+                <div class="inline-flex text-4xl p-4 bg-rose-500/10 text-rose-400 rounded-2xl mb-2 animate-bounce">❤️</div>
+                <h2 class="text-3xl font-extrabold tracking-tight text-white">How much do you know about Diogo?</h2>
+                <p class="text-slate-400 text-base max-w-sm mx-auto">A hot-seat game of memory, intuition, and seeing if you're truly his soulmate.</p>
+            </div>
+            
+            <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-xl text-left text-sm text-slate-400 space-y-2">
+                <p class="font-semibold text-slate-300">📌 Rules of the Game:</p>
+                <p>1. A question will appear on the screen.</p>
+                <p>2. You must answer Diogo's question <strong>out loud</strong>.</p>
+                <p>3. Flip the card to reveal his official secret answer!</p>
+            </div>
+
+            <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-950/40 transform active:scale-[0.98] transition-all duration-200 cursor-pointer text-lg">
+                Let's Play!
+            </button>
+        </div>
+
+        <!-- Game Window (Hidden Initially) -->
+        <div id="game-window" class="w-full hidden space-y-6">
+            <!-- Perspective Container for Flip Animation -->
+            <div class="perspective-1000 w-full h-80">
+                <div id="flashcard" class="transform-style-3d w-full h-full relative transition-transform duration-500 ease-out">
+                    
+                    <!-- Front Cover: The Question -->
+                    <div class="backface-hidden w-full h-full bg-slate-900 border-2 border-slate-800 p-8 rounded-3xl flex flex-col justify-between absolute shadow-xl">
+                        <span id="question-number" class="text-xs font-bold tracking-widest text-slate-500 uppercase">Question 01 of 20</span>
+                        <p id="question-text" class="text-2xl font-bold text-white text-center my-auto leading-snug">Loading question...</p>
+                        <button onclick="flipCard()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-sm tracking-wide transition-colors cursor-pointer">
+                            Reveal Diogo's Answer 👀
+                        </button>
+                    </div>
+
+                    <!-- Back Cover: Diogo's Response -->
+                    <div class="backface-hidden rotate-y-180 w-full h-full bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-rose-500/30 p-8 rounded-3xl flex flex-col justify-between absolute shadow-2xl">
+                        <span class="text-xs font-bold tracking-widest text-rose-400 uppercase">Diogo's Secret Answer</span>
+                        <p id="answer-text" class="text-xl font-medium text-slate-200 text-center my-auto italic px-2">Loading answer...</p>
+                        
+                        <!-- Judgment Evaluation Actions -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="handleScore(false)" class="py-3 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-400 font-medium rounded-xl text-sm transition-colors cursor-pointer">
+                                I Was Wrong 😢
+                            </button>
+                            <button onclick="handleScore(true)" class="py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm shadow-md shadow-rose-950/50 transition-colors cursor-pointer">
+                                I Got It Right! 🎉
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- End Match Summary Screen -->
+        <div id="results-screen" class="w-full text-center hidden space-y-6 bg-slate-900/50 border border-slate-800/80 p-8 rounded-3xl backdrop-blur-xl shadow-2xl">
+            <div class="space-y-2">
+                <div id="result-emoji" class="text-5xl mb-2">🏆</div>
+                <h2 class="text-3xl font-black tracking-tight text-white">Quiz Completed!</h2>
+                <p class="text-slate-400 text-sm">You answered all questions. Here is how you rank:</p>
+            </div>
+
+            <!-- Big Core Metric Ring Display -->
+            <div class="py-4">
+                <div class="inline-block bg-slate-950 border-2 border-slate-800 px-8 py-6 rounded-3xl">
+                    <span id="final-score" class="text-5xl font-black bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent">0</span>
+                    <span class="text-2xl font-bold text-slate-600"> / 20</span>
+                </div>
+            </div>
+
+            <!-- Custom Relationship Verdict Card -->
+            <div class="bg-slate-950/80 border border-slate-800/80 p-5 rounded-xl max-w-sm mx-auto">
+                <p id="rank-title" class="text-lg font-bold text-rose-400 mb-1">Rank Title</p>
+                <p id="rank-desc" class="text-sm text-slate-400 leading-relaxed">Rank description text dynamically loads here.</p>
+            </div>
+
+            <button onclick="restartGame()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-2xl text-sm tracking-wide transition-colors cursor-pointer">
+                Play Again Reset
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer Copyright -->
+    <footer class="w-full text-center py-4 text-xs text-slate-600 font-medium">
+        Made with ❤️ for Diogo & His Girlfriend
+    </footer>
+
+    <!-- Core Game Controller Framework Logic -->
+    <script>
+        const gameData = [
+            { question: "What was my absolute favorite video game growing up as a kid?", diogoAnswer: "Zelda: Breath of the Wild" },
+            { question: "If I could instantly become a professional athlete in any sport, which sport would it be?", diogoAnswer: "Fútbol" },
+            { question: "What is my go-to comfort food when I've had a long, exhausting day?", diogoAnswer: "Cookies and pizza" },
+            { question: "What was my very first impression of you when we first met?", diogoAnswer: "Wow, she's cool." },
+            { question: "If I won $10,000 tomorrow, what is the very first thing I would buy?", diogoAnswer: "Definitely a car." },
+            { question: "What is my biggest gaming pet peeve?", diogoAnswer: "Lag. I literally cannot deal with lag." },
+            { question: "If I’m staying up way too late on my computer, what am I most likely doing or watching?", diogoAnswer: "Probably playing FIFA or watching YouTube." },
+            { question: "Am I the type of player who aggressively pushes the objective, or do I play back?", diogoAnswer: "I am completely off-objective—I just play like Spider-Man and act as target back/support." },
+            { question: "If you gave me a choice between a perfectly smashed burger & fries or a massive bowl of gourmet street food, which am I picking?", diogoAnswer: "The perfectly smashed burger and killer fries, easily." },
+            { question: "What is a specific habit or quirk I do when I am hyper-focused on a task?", diogoAnswer: "Biting my nails." },
+            { question: "If we were to start a real-life business together tomorrow, what role would I instantly take charge of?", diogoAnswer: "I’d probably take the lead on the strategic/management side as CEO to keep us moving forward, while she handles the core vision and ownership!" },
+            { question: "If I could travel to any city in the world next week, all expenses paid, where am I going?", diogoAnswer: "Madrid, no doubt." },
+            { question: "If an AI cloned me perfectly, what is the one secret code word or question you could ask to figure out which one is the real me?", diogoAnswer: "\"Pancake.\"" },
+            { question: "What is a career goal or personal milestone I talk about wanting to achieve the most?", diogoAnswer: "To become financially successful and rich." },
+            { question: "If I could have the superpower of any fictional character, whose powers am I stealing?", diogoAnswer: "Spider-Man's powers all the way—super strength and total coolness." },
+            { question: "What is the most memorable date or anniversary celebration we’ve ever had, in my opinion?", diogoAnswer: "The time we spent together watching the Ponyo movie. I've just never been able to forget that day." },
+            { question: "What is an exact phrase or joke I say that always makes you laugh (or roll your eyes)?", diogoAnswer: "The \"Koalification\" joke, for sure." },
+            { question: "If we got lost on a road trip, would I immediately look at the GPS, or try to figure it out myself for 20 minutes first?", diogoAnswer: "I'd honestly try to figure it out myself first—the GPS is always wrong anyway!" },
+            { question: "If we could instantly teleport to any restaurant in the world right now for dinner, what are we eating?", diogoAnswer: "Chili's!" },
+            { question: "What is one thing I am secretly incredibly proud of, even if I don't brag about it out loud?", diogoAnswer: "Being able to solve things incredibly fast and come up with creative ideas on the fly, even if I don't brag about it." }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-window').classList.remove('hidden');
+            document.getElementById('score-counter').classList.remove('hidden');
+            document.getElementById('progress-bar-container').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentIndex >= gameData.length) {
+                endGame();
+                return;
+            }
+            
+            // Reset card positioning states
+            const card = document.getElementById('flashcard');
+            card.classList.remove('rotate-y-180');
+
+            // Render current text items safely
+            document.getElementById('question-number').innerText = `Question ${String(currentIndex + 1).padStart(2, '0')} of ${gameData.length}`;
+            document.getElementById('question-text').innerText = gameData[currentIndex].question;
+            document.getElementById('answer-text').innerText = gameData[currentIndex].diogoAnswer;
+            
+            // Handle active track status metrics
+            updateProgressBar();
+        }
+
+        function flipCard() {
+            document.getElementById('flashcard').classList.add('rotate-y-180');
+        }
+
+        function handleScore(isCorrect) {
+            if (isCorrect) {
+                score++;
+                document.getElementById('current-score').innerText = score;
+            }
+            currentIndex++;
+            
+            // Smooth delay step back to show execution loop visually clear
+            setTimeout(() => {
+                loadQuestion();
+            }, 200);
+        }
+
+        function updateProgressBar() {
+            const percentage = (currentIndex / gameData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        function endGame() {
+            document.getElementById('game-window').classList.add('hidden');
+            document.getElementById('progress-bar-container').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+
+            let emoji = "🏆";
+            let title = "";
+            let desc = "";
+
+            if (score === 20) {
+                emoji = "👑";
+                title = "Ultimate Soulmate Status";
+                desc = "You literally know Diogo better than he knows himself. Absolute perfection!";
+            } else if (score >= 15) {
+                emoji = "❤️";
+                title = "Diogo Certified Expert";
+                desc = "Incredible job! You know his quirks, his game playstyles, and exactly what makes him tick.";
+            } else if (score >= 10) {
+                emoji = "🍕";
+                title = "Pretty Casual Fan";
+                desc = "Not bad at all! You got the big stuff down, but it might be time for another movie night to catch up on details.";
+            } else {
+                emoji = "🧐";
+                title = "Are you sure you aren't a stranger?";
+                desc = "Uh oh! Go buy him some cookies or pizza right now to unlock more lore.";
+            }
+
+            document.getElementById('result-emoji').innerText = emoji;
+            document.getElementById('rank-title').innerText = title;
+            document.getElementById('rank-desc').innerText = desc;
+        }
+
+        function restartGame() {
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('current-score').innerText = score;
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('score-counter').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
